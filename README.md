@@ -14,7 +14,7 @@ Docker环境安装：
 
 [Terraform安装](https://www.terraform.io/downloads.html) 
 
-[观测云若依Demo Git 地址](https://jishufanganzhongxin.coding.net/public/f3s-pub-ops/terraform-tencent-project-f3s/git/files)
+[观测云若依Demo Git 地址](https://github.com/Harlonxl/Guance-Ruoyi-Terraform)
 
 
 ## 快速构建观测云若依Demo
