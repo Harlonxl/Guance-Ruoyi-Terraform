@@ -146,8 +146,8 @@ resource "null_resource" "k8s-master" {
            done
 
            # 部署若依系统
-           wget https://guance-south.oss-cn-guangzhou.aliyuncs.com/ruoyi-terraform-deploy.tar.gz
-           tar xzvf ruoyi-terraform-deploy.tar.gz
+           wget https://guance-south.oss-cn-guangzhou.aliyuncs.com/ruoyi-terraform-deploy.2.0.tar.gz
+           tar xzvf ruoyi-terraform-deploy.2.0.tar.gz
            ./deploy_ruoyi.sh \
            --applicationid=${var.applicationId} \
            --allowedtracingorigins="['http://${module.ecs_cluster.this_public_ip.0}:30000', 'http://${module.ecs_cluster.this_public_ip.1}:30000']" \
@@ -166,7 +166,8 @@ resource "null_resource" "k8s-master" {
 data "template_file" "result_out_script" {
   template = file("${path.root}/template/result_out.tpl")
   vars = {
-    ecs_ip           = module.ecs_cluster.this_public_ip.1,
+    ecs_ip1           = module.ecs_cluster.this_public_ip.1,
+    ecs_ip0           = module.ecs_cluster.this_public_ip.0,
   }
   depends_on = [
     module.ecs_cluster

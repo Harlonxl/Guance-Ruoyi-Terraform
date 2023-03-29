@@ -38,7 +38,7 @@ export ALICLOUD_SECRET_KEY="zfwwWAMWIAiooj14GQ2*************"
 ### 2.2 修改项目目录下 ./variables.tf 文件中的变量
 ```shell
 cd aliyun
-vim ./variables.tf
+vi ./variables.tf
 ```
 
 ### 3. 第三步：快速构建

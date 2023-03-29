@@ -5,7 +5,7 @@ variable "applicationId" {
 
 # 观测云 token，获取方式：https://console.guance.com/zh/workspace/detail
 variable "token" {
-  default = "tkn_5c73xxxxxxxeaf2"
+  default = "tkn_5c7xxxxxxaf2"
 }
 
 # 若依服务名称前缀，按需设置
@@ -30,21 +30,20 @@ variable "resource_group_id" {
 
 # VPC名称，按需设置
 variable "vpc_name" {
-  default = "default"
+  default = "terraform-default"
 }
 
 # 安全组名称，按需设置
 variable "security_group_name" {
-  default = "default"
+  default = "terraform-default"
 }
 
 # ecs名称，按需设置
 variable "ecs_name" {
-  default = "default"
+  default = "terraform-default"
 }
 
 # ecs密码
 variable "ecs_password" {
   default = "admin@123"
 }
-
