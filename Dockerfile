@@ -8,13 +8,15 @@ RUN localedef -c -f UTF-8 -i zh_CN zh_CN.utf8
 ENV LC_ALL zh_CN.utf8
 
 # 添加terraform
-RUN yum -y install wget unzip
+RUN yum -y install wget unzip git
 RUN wget https://releases.hashicorp.com/terraform/1.3.9/terraform_1.3.9_linux_amd64.zip
 RUN unzip terraform_1.3.9_linux_amd64.zip
 RUN mv terraform /usr/local/bin/
 
 RUN mkdir -p /apps/aliyun
-COPY ./aliyun/ /apps/aliyun/
+COPY ./aliyun/template /apps/aliyun/template
+COPY ./aliyun/main.tf /apps/aliyun/
+COPY ./aliyun/variables.tf /apps/aliyun/
 RUN cd /apps/aliyun/ && /usr/local/bin/terraform init
 
 WORKDIR /apps
