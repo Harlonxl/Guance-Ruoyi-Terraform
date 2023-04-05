@@ -78,22 +78,35 @@ terraform destroy -auto-approve
 ### 4. 第四步：配置观测云
 > Todo: 利用观测云 terraform provider 可跳过此步骤，预计4月中旬
 
-#### 4.1 设置日志 Pipeline
+#### 4.1 设置业务日志 Pipeline
 进入观测云控制台，「日志」-「文本处理 Pipeline」- 「新建Pipeline」
 - 过滤：选择第二步设置的 source，默认为 ruoyi-log
 - Pipeline 名称：按需设置，例如：ruoyi-log
 - 定义解析规则：
 ```shell
 grok(_, "%{TIMESTAMP_ISO8601:time} %{NOTSPACE:thread_name} %{LOGLEVEL:status}%{SPACE}%{NOTSPACE:class_name} - \\[%{NOTSPACE:method_name},%{NUMBER:line}\\] - %{DATA:service} %{DATA:trace_id} %{DATA:span_id} - %{GREEDYDATA:msg}")
-default_time(time,"Asia/Shanghai")
+default_time(time, "Asia/Shanghai")
 ```
 
-#### 4.2 过滤前端请求
-> 通过 nginx 代理方式上传 RUM 数据，导致 RUM Fetch/XHR 中有大量 /v1/write/rum、/v1/write/replay 类似接口调用，设置过滤规则进行过滤
+#### 4.2 设置 nginx 日志 Pipeline
+进入观测云控制台，「日志」-「文本处理 Pipeline」- 「新建Pipeline」
+- 过滤：选择第二步设置的 source，默认为 ruoyi-nginx
+- Pipeline 名称：按需设置，例如：ruoyi-nginx
+- 定义解析规则：
+```shell
+json(_, opentracing_context_x_datadog_trace_id, trace_id)
+json(_, `@timestamp`, time)
+json(_, status)
+group_between(status, [200, 300], "OK")
+default_time(time)
+```
+
+#### 4.3 过滤前端请求
+> 通过 nginx 代理方式上传 RUM 数据，导致 RUM Fetch/XHR 中有大量 /v1/write/rum、/v1/write/rum/replay 类似接口调用，设置过滤规则进行过滤
 
 进入观测云控制台，「管理」-「黑名单」- 「新建黑名单」
 - 访问来源：选择用户访问监测，以及对应的应用
-- 过滤：选择所有，筛选条件：resource_url_path math /rum/v1/write/rum
+- 过滤：选择所有，筛选条件：resource_url_path math /rum/*
 
 ## 其他资料
 - [观测云若依Demo部署清单](https://github.com/Harlonxl/Observability/tree/master/ruoyi-terraform-deploy)

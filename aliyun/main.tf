@@ -144,10 +144,11 @@ resource "null_resource" "k8s-master" {
              if [[ "$status" == "Ready" ]]; then echo "kubernetes ready"; break; fi
              sleep 5;
            done
+           sleep 10;
 
            # 部署若依系统
-           wget https://guance-south.oss-cn-guangzhou.aliyuncs.com/ruoyi-terraform-deploy.2.1.tar.gz
-           tar xzvf ruoyi-terraform-deploy.2.1.tar.gz
+           wget https://guance-south.oss-cn-guangzhou.aliyuncs.com/ruoyi-terraform-deploy.2.2.tar.gz
+           tar xzvf ruoyi-terraform-deploy.2.2.tar.gz
            ./deploy_ruoyi.sh \
            --applicationid=${var.applicationId} \
            --allowedtracingorigins="['http://${module.ecs_cluster.this_public_ip.0}:30000', 'http://${module.ecs_cluster.this_public_ip.1}:30000']" \
