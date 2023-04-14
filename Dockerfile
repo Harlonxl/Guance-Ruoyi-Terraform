@@ -19,6 +19,13 @@ COPY ./aliyun/main.tf /apps/aliyun/
 COPY ./aliyun/variables.tf /apps/aliyun/
 RUN cd /apps/aliyun/ && /usr/local/bin/terraform init
 
+RUN mkdir -p /apps/aws
+COPY ./aws/template /apps/aws/template
+COPY ./aws/resource /apps/aws/resource
+COPY ./aws/main.tf /apps/aws/
+COPY ./aws/variables.tf /apps/aws/
+RUN cd /apps/aws/ && /usr/local/bin/terraform init
+
 WORKDIR /apps
 
 CMD ["tail", "-f", "/dev/null"]

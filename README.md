@@ -2,7 +2,7 @@
 
 ## 准备工作
 
-### 1. 使用docker镜像部署（推荐）
+### 1. 使用 docker 镜像部署（推荐）
 > 注意：terraform 构建信息存储至容器中，未释放资源请勿停止容器
 
 Docker环境安装：
@@ -21,7 +21,7 @@ Docker环境安装：
 ### 1. 第一步：拉取一键安装镜像
 > 本地环境部署跳到第二步
 ```shell
-docker run --name guance-ruoyi-terraform -d -it registry.cn-guangzhou.aliyuncs.com/guance-south/guance-ruoyi-terraform:v1.1 /bin/bash
+docker run --name guance-ruoyi-terraform -d -it registry.cn-guangzhou.aliyuncs.com/guance-south/guance-ruoyi-terraform:v1.2 /bin/bash
 ```
 进入容器
 ```shell
@@ -30,14 +30,35 @@ docker exec -it guance-ruoyi-terraform /bin/bash
 
 ### 2. 第二步：修改变量
 ### 2.1 创建环境变量，存放身份认证信息
+- 阿里云配置方式
+
+`ALICLOUD_ACCESS_KEY` 和 `ALICLOUD_SECRET_KEY` 获取方式：https://ram.console.aliyun.com/manage/ak
 ```shell
 export ALICLOUD_ACCESS_KEY="LTAIUrZCw3********"
 export ALICLOUD_SECRET_KEY="zfwwWAMWIAiooj14GQ2*************"
 ```
 
+- AWS 配置方式
+
+`AWS_ACCESS_KEY_ID` 和 `AWS_SECRET_ACCESS_KEY` 获取方式：https://docs.aws.amazon.com/zh_cn/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_RotateAccessKey
+
+```shell
+export AWS_ACCESS_KEY_ID="AKIAUJGWAI********"
+export AWS_SECRET_ACCESS_KEY="r5R2ft1c48Xzo72+Mb*************"
+```
+
 ### 2.2 修改项目目录下 ./variables.tf 文件中的变量
+> 仔细阅读变量含义，按需进行修改
+
+- 阿里云
 ```shell
 cd aliyun
+vi ./variables.tf
+```
+
+- AWS
+```shell
+cd aws
 vi ./variables.tf
 ```
 
@@ -58,7 +79,7 @@ terraform plan #查看terraform任务执行计划
 terraform apply -auto-approve 
 ```
 
-#### 3.4 查看资源清单
+#### 3.4 查看访问方式及部署清单
 ```shell
 cat result_out.md 
 ```
