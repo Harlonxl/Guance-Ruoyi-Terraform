@@ -1,6 +1,6 @@
 # 观测云 rum application，获取方式：https://console.guance.com/zh/rum/setting
 variable "applicationId" {
-  default = "ruoyi_web"
+  default = "aliyun_ruoyi_web"
 }
 
 # 观测云 token，获取方式：https://console.guance.com/zh/workspace/detail
@@ -10,17 +10,22 @@ variable "token" {
 
 # 若依服务名称前缀，按需设置
 variable "prefix" {
-  default = "ruoyi"
+  default = "aliyun-ruoyi"
 }
 
 # 若依服务日志 source，按需设置
 variable "log_source" {
-  default = "ruoyi-log"
+  default = "aliyun-ruoyi-log"
 }
 
 # 地域ID，参见：https://help.aliyun.com/document_detail/472081.html
 variable "region" {
   default = "cn-guangzhou"
+}
+
+# ecs密码
+variable "ecs_password" {
+  default = "admin@123"
 }
 
 # 资源组ID，按需配置，获取链接：https://resourcemanager.console.aliyun.com/resource-groups
@@ -30,20 +35,15 @@ variable "resource_group_id" {
 
 # VPC名称，按需设置
 variable "vpc_name" {
-  default = "terraform-default"
+  default = "aliyun-terraform-default"
 }
 
 # 安全组名称，按需设置
 variable "security_group_name" {
-  default = "terraform-default"
+  default = "aliyun-terraform-default"
 }
 
 # ecs名称，按需设置
 variable "ecs_name" {
-  default = "terraform-default"
-}
-
-# ecs密码
-variable "ecs_password" {
-  default = "admin@123"
+  default = "aliyun-terraform-default"
 }
