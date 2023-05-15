@@ -21,7 +21,7 @@ Docker环境安装：
 ### 1. 第一步：拉取一键安装镜像
 > 本地环境部署跳到第二步
 ```shell
-docker run --name guance-ruoyi-terraform -d -it registry.cn-guangzhou.aliyuncs.com/guance-south/guance-ruoyi-terraform:v1.2 /bin/bash
+docker run --name guance-ruoyi-terraform -d -it registry.cn-guangzhou.aliyuncs.com/guance-south/guance-ruoyi-terraform:v1.3 /bin/bash
 ```
 进入容器
 ```shell
