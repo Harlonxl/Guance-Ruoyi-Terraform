@@ -1,9 +1,23 @@
-data "aws_availability_zones" "available" {
-  state = "available"
+terraform {
+  required_providers {
+    guance = {
+      source  = "GuanceCloud/guance"
+      version = "~> 0.0.4"
+    }
+  }
 }
 
 provider "aws" {
   region = var.region
+}
+
+provider "guance" {
+  region = var.guance_region
+  access_token  = var.api_key
+}
+
+data "aws_availability_zones" "available" {
+  state = "available"
 }
 
 data "aws_ami" "amazon" {
@@ -194,12 +208,12 @@ resource "null_resource" "ruoyi" {
            sleep 10;
 
            # 部署若依系统
-           wget https://guance-south.oss-cn-guangzhou.aliyuncs.com/ruoyi-terraform-deploy.2.2.tar.gz
-           tar xzvf ruoyi-terraform-deploy.2.2.tar.gz
+           wget https://guance-south.oss-cn-guangzhou.aliyuncs.com/ruoyi-terraform-deploy.2.3.tar.gz
+           tar xzvf ruoyi-terraform-deploy.2.3.tar.gz
            ./deploy_ruoyi.sh \
            --applicationid=${var.applicationId} \
            --allowedtracingorigins="['http://${module.ec2_cluster.public_ip.0}:30000', 'http://${module.ec2_cluster.public_ip.1}:30000']" \
-           --datakittoken=${var.token} \
+           --dataway="${var.dataway}?token=${var.token}" \
            --prefix=${var.prefix} \
            --logsource=${var.log_source}
 
@@ -213,6 +227,128 @@ resource "null_resource" "ruoyi" {
   ]
 }
 
+# create guance pipeline
+resource "guance_pipeline" "ruoyi-log" {
+  name     = var.log_source
+  category = "logging"
+  source = [
+    var.log_source
+  ]
+  is_default = false
+  is_force   = false
+
+  content = <<EOF
+    grok(_, "%%{TIMESTAMP_ISO8601:time} %%{NOTSPACE:thread_name} %%{LOGLEVEL:status}%%{SPACE}%%{NOTSPACE:class_name} - \\[%%{NOTSPACE:method_name},%%{NUMBER:line}\\] - %%{DATA:service} %%{DATA:trace_id} %%{DATA:span_id} - %%{GREEDYDATA:msg}")
+    default_time(time, "Asia/Shanghai")
+    EOF
+
+  depends_on = [
+    resource.null_resource.ruoyi
+  ]
+}
+
+resource "guance_pipeline" "ruoyi-nginx" {
+  name     = "${var.prefix}-nginx"
+  category = "logging"
+  source = [
+    "${var.prefix}-nginx"
+  ]
+  is_default = false
+  is_force   = false
+
+  content = <<EOF
+    json(_, opentracing_context_x_datadog_trace_id, trace_id)
+    json(_, `@timestamp`, time)
+    json(_, status)
+    group_between(status, [200, 300], "OK")
+    default_time(time)
+    EOF
+
+  depends_on = [
+    resource.null_resource.ruoyi
+  ]
+}
+
+resource "guance_blacklist" "ruoyi-blacklist" {
+  source = {
+    type = "rum"
+    name = var.applicationId
+  }
+
+  filter_rules = [
+    {
+      name      = "resource_url_path"
+      operation = "match"
+      condition = "and"
+      values    = ["/rum/*"]
+    }
+  ]
+
+  depends_on = [
+    resource.null_resource.ruoyi
+  ]
+}
+
+module "k8s-dashboard" {
+  source  = "GuanceCloud/dashboard/guance//modules/kubernetes"
+  version = "0.0.3"
+  name    = "Kubernetes 监控视图"
+}
+
+data "guance_members" "members" {
+  filters = [
+    {
+      name   = "email"
+      values = [var.email]
+    }
+  ]
+}
+
+resource "guance_membergroup" "membergroup" {
+  name       = "guance-tf-membergroup"
+  member_ids = data.guance_members.members.items[*].id
+
+    depends_on = [
+      resource.null_resource.ruoyi
+    ]
+}
+
+resource "guance_alertpolicy" "alertpolicy" {
+  name           = "guance-tf-alertpolicy"
+  silent_timeout = "15m"
+
+  statuses = [
+    "critical",
+    "error",
+    "warning",
+    "info",
+    "ok",
+    "nodata",
+    "nodata_ok",
+    "nodata_as_ok",
+  ]
+
+  alert_targets = [
+    {
+      type = "member_group"
+      member_group = {
+        id = guance_membergroup.membergroup.id
+      }
+    },
+  ]
+
+  depends_on = [
+    resource.null_resource.ruoyi
+  ]
+}
+
+module "docker" {
+  source  = "GuanceCloud/monitor/guance//modules/docker"
+  version         = "0.0.2"
+  alert_policy_id = guance_alertpolicy.alertpolicy.id
+  dashboard_id = module.k8s-dashboard.dashboard_id
+}
+
 data "template_file" "result_out_script" {
   template = file("${path.root}/template/result_out.tpl")
   vars = {
@@ -220,7 +356,7 @@ data "template_file" "result_out_script" {
     ec2_ip0 = module.ec2_cluster.public_ip.0,
   }
   depends_on = [
-    module.ec2_cluster
+    resource.null_resource.ruoyi
   ]
 }
 
